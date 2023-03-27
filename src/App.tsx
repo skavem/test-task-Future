@@ -1,58 +1,59 @@
-import React from 'react';
-import logo from './logo.svg';
-import { Counter } from './features/counter/Counter';
-import './App.css';
+import React, { useState, useCallback } from 'react'
+import { useNavigate } from 'react-router-dom'
+import './App.css'
+import { categories, loadBooks, sortOptions } from './store/books/booksAPI'
+import { useAppDispatch } from './store/hooks'
+import HeaderSearch from './components/HeaderSearch'
+import BookList from './components/BookList'
+import { Routes } from 'react-router-dom'
+import { Route } from 'react-router'
+import BookPage from './components/BookPage'
 
 function App() {
+  const [searchValue, setSearchValue] = useState('')
+  const [loading, setLoading] = useState(false)
+
+  const [orderBy, setOrderBy] = useState(sortOptions[0])
+  const [curCategory, setCurCategory] = useState(categories[0])
+  const dispatch = useAppDispatch()
+
+  const navigate = useNavigate()
+
+  const getBooks = useCallback(
+    async (startIndex?: number) => {
+      navigate('/')
+      setLoading(true)
+      await dispatch(loadBooks(searchValue, orderBy, curCategory, startIndex))
+      setLoading(false)
+    },
+    [searchValue, dispatch, setLoading, orderBy, curCategory, navigate],
+  )
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <Counter />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <span>
-          <span>Learn </span>
-          <a
-            className="App-link"
-            href="https://reactjs.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            React
-          </a>
-          <span>, </span>
-          <a
-            className="App-link"
-            href="https://redux.js.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Redux
-          </a>
-          <span>, </span>
-          <a
-            className="App-link"
-            href="https://redux-toolkit.js.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Redux Toolkit
-          </a>
-          ,<span> and </span>
-          <a
-            className="App-link"
-            href="https://react-redux.js.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            React Redux
-          </a>
-        </span>
-      </header>
-    </div>
-  );
+    <main>
+      <section>
+        <HeaderSearch
+          curCategory={curCategory}
+          setCurCategory={setCurCategory}
+          orderBy={orderBy}
+          setOrderBy={setOrderBy}
+          searchValue={searchValue}
+          setSearchValue={setSearchValue}
+          getBooks={getBooks}
+        />
+
+        <Routes>
+          <Route 
+            path='/' 
+            element={
+              <BookList loading={loading} getBooks={getBooks} />
+            }
+          />
+          <Route path='book/:id' element={<BookPage />}/>
+        </Routes>
+      </section>
+    </main>
+  )
 }
 
-export default App;
+export default App
