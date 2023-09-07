@@ -12,7 +12,7 @@ const root = createRoot(container);
 root.render(
   <React.StrictMode>
     <Provider store={store}>
-      <BrowserRouter>
+      <BrowserRouter basename={process.env.REACT_APP_BASENAME ?? "/"}>
         <App />
       </BrowserRouter>
     </Provider>
